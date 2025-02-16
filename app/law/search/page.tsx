@@ -216,7 +216,7 @@ export default function LegalSearchPage() {
 
                                     <div className="flex justify-end items-center gap-4 mt-6">
                                         <Link
-                                            href={`/law/search/${result.documentId}`}
+                                            href={`/law/cases/${result.documentId}`}
                                             className="px-4 py-2 bg-emerald-600 text-white rounded-md font-medium shadow-sm hover:bg-emerald-700 transition-colors flex items-center gap-2"
                                             onClick={() => console.log('Clicking link for document:', result.documentId)}
                                         >

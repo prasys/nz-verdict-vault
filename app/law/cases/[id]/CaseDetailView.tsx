@@ -1,15 +1,6 @@
 import { LegalDocumentSummary } from '@/backend/server-actions/law/types';
 import { IoScale } from 'react-icons/io5';
-import { Timeline } from '@/components/Timeline';
 import Link from 'next/link';
-
-// Add type for timeline entry
-interface TimelineItem {
-    date: string;
-    event: string;
-    details: string;
-    significance?: string;
-}
 
 function CaseNotFound() {
     return (
@@ -23,34 +14,6 @@ function CaseNotFound() {
         </div>
     );
 }
-
-// Helper function to parse dates in various formats
-const DATE_REGEX_PATTERNS: RegExp[] = [
-    /(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})/i,
-    /(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{4})/i,
-    /(\d{4})-(\d{2})-(\d{2})/,
-    /^(\d{4})$/
-];
-
-const parseDate = (dateStr: string): number => {
-    for (const regex of DATE_REGEX_PATTERNS) {
-        const match = dateStr.match(regex);
-        if (match) return Number(match[match.length - 1]);
-    }
-    const fallbackMatch = dateStr.match(/\b(19|20)\d{2}\b/);
-    return fallbackMatch ? Number(fallbackMatch[0]) : new Date().getFullYear();
-};
-
-// Add type annotation to formatTimelineEntries
-const formatTimelineEntries = (timeline: TimelineItem[]) => {
-    return timeline.map(item => ({
-        year: parseDate(item.date),
-        date: item.date,
-        title: item.event,
-        detail: item.details,
-        significance: item.significance || ''
-    }));
-};
 
 export function CaseDetailView({ caseData }: { caseData: LegalDocumentSummary }) {
     if (!caseData) return <CaseNotFound />;
@@ -78,7 +41,7 @@ export function CaseDetailView({ caseData }: { caseData: LegalDocumentSummary })
                             </div>
                             <div className="mt-3 text-center">
                                 <h2 className="text-emerald-800 text-lg font-semibold">Case Summary</h2>
-                                <p className="mt-2 text-gray-600 text-sm">{caseData.analysis.summary}</p>
+                                <p className="mt-2 text-gray-600 text-sm text-start">{caseData.analysis.summary}</p>
                                 <div className="flex flex-wrap gap-2 mt-4 justify-center">
                                     {caseData.analysis.keyTopics.map((topic, i) => (
                                         <span key={i} className="px-3 py-1 text-sm bg-emerald-100 text-emerald-800 rounded-md">{topic}</span>
@@ -110,46 +73,31 @@ export function CaseDetailView({ caseData }: { caseData: LegalDocumentSummary })
                                     {caseData.caseDetails?.background.context || caseData.analysis.summary}
                                 </p>
 
-                                {caseData.caseDetails?.background.preEvents ? (
+                                {caseData.caseDetails?.background.preEvents && (
                                     <>
                                         <h3 className="font-semibold mb-2 mt-4">Key Events Leading to the Case</h3>
-                                        <Timeline
-                                            entries={formatTimelineEntries([
-                                                {
-                                                    date: "22 June 2012",
-                                                    event: "MSD Investigation Initiation",
-                                                    details: "MSD received information suggesting that Ms. Hawe was in a relationship with Mr. Thomas while receiving benefits as a single person.",
-                                                    significance: "Initiated an investigation into Ms. Hawe's benefit entitlement."
-                                                },
-                                                {
-                                                    date: "11 July 2012",
-                                                    event: "First Notice to Westpac Bank",
-                                                    details: "MSD sent the first notice to Westpac Bank regarding Mr. Thomas and Ms. Hawe.",
-                                                    significance: "Marked the beginning of the information-gathering process that led to the privacy complaint."
-                                                },
-                                                {
-                                                    date: "28 November 2012",
-                                                    event: "Ms. Hawe Interview",
-                                                    details: "MSD interviewed Ms. Hawe, who provided information about Mr. Thomas's residence.",
-                                                    significance: "This interview was crucial in determining the legitimacy of the benefits received by Ms. Hawe."
-                                                },
-                                                {
-                                                    date: "29 November 2012",
-                                                    event: "Letter to Mr. Thomas",
-                                                    details: "MSD sent a letter to Mr. Thomas requesting financial information.",
-                                                    significance: "This letter was not received by Mr. Thomas, leading to further notices being sent without his knowledge."
-                                                },
-                                                {
-                                                    date: "7 May 2013",
-                                                    event: "Multiple Third-Party Notices",
-                                                    details: "MSD issued multiple notices to third parties seeking information about Mr. Thomas.",
-                                                    significance: "These notices were central to Mr. Thomas's privacy complaint."
-                                                }
-                                            ])}
-                                            summary="Timeline of events leading to the privacy complaint against MSD regarding the investigation into Ms. Hawe's benefit entitlement."
-                                        />
+                                        <ul className="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
+                                            {caseData.caseDetails.background.preEvents.map((event, i) => (
+                                                <li key={i}>
+                                                    <hr />
+                                                    <div className="timeline-middle">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </div>
+                                                    <div className={`timeline-${i % 2 === 0 ? 'start' : 'end'} md:mb-10 ${i % 2 === 0 ? 'md:text-end' : ''}`}>
+                                                        <time className="font-mono italic text-primary">{event.date}</time>
+                                                        <div className="text-lg font-black">{event.description}</div>
+                                                        {event.significance && (
+                                                            <div className="text-base-content/70">{event.significance}</div>
+                                                        )}
+                                                    </div>
+                                                    <hr />
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </>
-                                ) : null}
+                                )}
 
                                 {(caseData.caseDetails?.background.keyIssues || !caseData.caseDetails) && (
                                     <>
@@ -198,10 +146,29 @@ export function CaseDetailView({ caseData }: { caseData: LegalDocumentSummary })
                                     <h2 className="text-purple-800 text-lg font-semibold text-center">Proceedings</h2>
 
                                     {caseData.caseDetails.proceedings.timeline && (
-                                        <Timeline
-                                            entries={formatTimelineEntries(caseData.caseDetails.proceedings.timeline)}
-                                            summary={caseData.caseDetails.background.context}
-                                        />
+                                        <div className="mt-4">
+                                            <ul className="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
+                                                {caseData.caseDetails.proceedings.timeline.map((item, i) => (
+                                                    <li key={i}>
+                                                        <hr />
+                                                        <div className="timeline-middle">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                                                            </svg>
+                                                        </div>
+                                                        <div className={`timeline-${i % 2 === 0 ? 'start' : 'end'} md:mb-10 ${i % 2 === 0 ? 'md:text-end' : ''}`}>
+                                                            <time className="font-mono italic text-primary">{item.date}</time>
+                                                            <div className="text-lg font-black">{item.event}</div>
+                                                            <div className="text-base">{item.details}</div>
+                                                            {item.significance && (
+                                                                <div className="text-base-content/70">{item.significance}</div>
+                                                            )}
+                                                        </div>
+                                                        <hr />
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                     )}
 
                                     {caseData.caseDetails.proceedings.evidence && caseData.caseDetails.proceedings.evidence.length > 0 && (

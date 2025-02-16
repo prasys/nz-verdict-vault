@@ -42,14 +42,14 @@ export function Timeline({ entries, summary }: TimelineProps) {
             </div>
 
             <div className="relative">
-                <ul className="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
+                <ul className="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical timeline-start">
                     {sortedEntries.map((entry, index) => (
                         <li key={`${entry.year}-${entry.date}-${index}`}>
                             {index > 0 && <hr />}
                             <div className="timeline-middle">
                                 <CheckIcon />
                             </div>
-                            <div className={`${index % 2 === 0 ? 'timeline-start' : 'timeline-end'} mb-10 ${index % 2 === 0 ? 'md:text-end' : ''}`}>
+                            <div className="timeline-end timeline-box mb-10">
                                 <time className="font-mono italic text-sm">{entry.date}</time>
                                 <div className="text-lg font-black my-2">{entry.title}</div>
                                 <div className="text-base leading-relaxed">{entry.detail}</div>
