@@ -1,23 +1,14 @@
 'use client';
 
-import { useChat } from '@ai-sdk/react';
-import { IoSearchOutline } from 'react-icons/io5';
+import { useChat, Message } from '@ai-sdk/react';
+import { IoSearchOutline, IoArrowForward } from 'react-icons/io5';
 import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote';
 import { serialize } from 'next-mdx-remote/serialize';
 import { useEffect, useState } from 'react';
+import { useMDXComponents } from '@/mdx-components';
+import Link from 'next/link';
 import { CaseCard } from '@/components/ui/case-card';
 
-// Define types for the chat response and messages
-interface ChatResponse {
-    toolInvocations?: ToolInvocation[];
-}
-
-interface ChatMessage {
-    id: string;
-    role: 'user' | 'assistant';
-    content: string;
-    toolInvocations?: ToolInvocation[];
-}
 
 interface LegalSearchResult {
     documentId: string;
@@ -72,6 +63,10 @@ interface ToolResultInvocation {
 
 type ToolInvocation = ToolCallInvocation | ToolResultInvocation;
 
+type ResponseWithTools = Message & {
+    toolInvocations: ToolInvocation[];
+};
+
 function ToolCallCard({ tool }: { tool: ToolCallInvocation }) {
     return (
         <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 mb-2">
@@ -86,33 +81,141 @@ function ToolCallCard({ tool }: { tool: ToolCallInvocation }) {
 
 function MessageContent({ content, toolInvocations }: { content: string | null; toolInvocations: ToolInvocation[] | undefined }) {
     const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult | null>(null);
+    const [isDebugOpen, setIsDebugOpen] = useState(false);
+    const mdxComponents = useMDXComponents({
+        Link,
+        CaseCard,
+        IoArrowForward,
+    });
 
+    // Process regular content
     useEffect(() => {
         if (content) {
-            serialize(content, {
-                mdxOptions: {
-                    development: process.env.NODE_ENV === 'development',
-                }
-            }).then(setMdxSource);
+            serialize(content).then(setMdxSource);
         }
     }, [content]);
 
+    // Process tool results
+    useEffect(() => {
+        if (toolInvocations?.length) {
+            const lastTool = toolInvocations[toolInvocations.length - 1];
+            if (lastTool.state === 'result' && lastTool.name === 'legalSearch') {
+                processToolResults(lastTool);
+            }
+        }
+    }, [toolInvocations]);
+
+    const processToolResults = async (tool: ToolResultInvocation) => {
+        try {
+            const { tool_results } = tool.output;
+            const results = tool_results?.results;
+
+            if (!results || results.length === 0) {
+                const noResultsMdx = `# No Results Found\n\nI couldn't find any cases that match your query. Try rephrasing your search or using different keywords.`;
+                setMdxSource(await serialize(noResultsMdx));
+                return;
+            }
+
+            // Get the most relevant result
+            const mainResult = results[0];
+            const otherResults = results.slice(1);
+
+            // Helper function to escape special characters in strings
+            const escapeString = (str: string) => str.replace(/['"\\]/g, '\\$&');
+
+            // Helper function to safely stringify JSON
+            const safeJsonStringify = (obj: Record<string, unknown> | unknown[]) => {
+                if (!obj) return '{}';
+                return JSON.stringify(obj)
+                    .replace(/"/g, '\\"')
+                    .replace(/\n/g, '\\n');
+            };
+
+            // Build MDX content with proper escaping
+            const mdxContent = `
+# Legal Analysis
+
+${mainResult.relevance}
+
+<CaseCard
+    documentId="${escapeString(mainResult.documentId)}"
+    title="${escapeString(mainResult.analysis.title)}"
+    date="${escapeString(mainResult.analysis.date)}"
+    tribunal="${escapeString(mainResult.analysis.tribunal)}"
+    summary="${escapeString(mainResult.analysis.summary)}"
+    decision={{
+        outcome: "${escapeString(mainResult.analysis.decision?.outcome || '')}",
+        reasoning: "${escapeString(mainResult.analysis.decision?.reasoning || '')}",
+        implications: ${safeJsonStringify(mainResult.analysis.decision?.implications || [])}
+    }}
+    keyIssues={${safeJsonStringify(mainResult.caseDetails?.background?.keyIssues || [])}}
+    keyPrinciples={${safeJsonStringify(mainResult.analysis.keyPrinciples || [])}}
+/>
+
+${otherResults.length > 0 ? `
+## Related Cases
+
+${otherResults.map(result => `
+### ${escapeString(result.analysis.title)}
+${result.relevance}
+
+<CaseCard
+    documentId="${escapeString(result.documentId)}"
+    title="${escapeString(result.analysis.title)}"
+    date="${escapeString(result.analysis.date)}"
+    tribunal="${escapeString(result.analysis.tribunal)}"
+    summary="${escapeString(result.analysis.summary)}"
+    decision={{
+        outcome: "${escapeString(result.analysis.decision?.outcome || '')}",
+        reasoning: "${escapeString(result.analysis.decision?.reasoning || '')}",
+        implications: ${safeJsonStringify(result.analysis.decision?.implications || [])}
+    }}
+    keyIssues={${safeJsonStringify(result.caseDetails?.background?.keyIssues || [])}}
+    keyPrinciples={${safeJsonStringify(result.analysis.keyPrinciples || [])}}
+/>
+`).join('\n')}
+` : ''}
+
+${tool_results.suggestedResponse ? `
+## Key Takeaways
+
+${tool_results.suggestedResponse}
+` : ''}`;
+
+            setMdxSource(await serialize(mdxContent));
+        } catch (error) {
+            console.error('Error processing search result:', error);
+            const errorMdx = `# Error Processing Results\n\nAn error occurred while processing the search results. Please try your search again.`;
+            setMdxSource(await serialize(errorMdx));
+        }
+    };
+
     return (
         <div className="space-y-4">
-            {/* Raw Tool Invocations Debug Panel */}
-            <div className="bg-yellow-50 p-4 rounded-lg text-xs font-mono overflow-x-auto border border-yellow-200">
-                <div className="font-bold mb-2">Raw Tool Invocations:</div>
-                <pre>
-                    {JSON.stringify(toolInvocations, null, 2)}
-                </pre>
+            {/* Collapsible Debug Panel */}
+            <div className="relative">
+                <button
+                    onClick={() => setIsDebugOpen(!isDebugOpen)}
+                    className="w-full flex items-center justify-between p-2 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                    <span className="flex items-center gap-2">
+                        <IoSearchOutline className="h-4 w-4" />
+                        Tool Invocations
+                    </span>
+                    <span className="text-xs">
+                        {isDebugOpen ? '▼' : '▶'}
+                    </span>
+                </button>
+                {isDebugOpen && (
+                    <div className="mt-2 p-4 bg-yellow-50 rounded-lg text-xs font-mono overflow-x-auto border border-yellow-200">
+                        <pre className="whitespace-pre-wrap">
+                            {JSON.stringify(toolInvocations, null, 2)}
+                        </pre>
+                    </div>
+                )}
             </div>
 
-            {content && mdxSource && (
-                <div className="prose prose-sm max-w-none">
-                    <MDXRemote {...mdxSource} />
-                </div>
-            )}
-
+            {/* Search Status */}
             {toolInvocations?.map((tool, index) => {
                 if (tool.state === 'call' && tool.name === 'legalSearch') {
                     return (
@@ -121,53 +224,15 @@ function MessageContent({ content, toolInvocations }: { content: string | null; 
                         </div>
                     );
                 }
-
-                if (tool.state === 'result' && tool.name === 'legalSearch') {
-                    try {
-                        const results = tool.output?.tool_results?.results;
-
-                        if (results && results.length > 0) {
-                            return (
-                                <div key={`result-${index}`} className="space-y-6">
-                                    <div className="text-sm font-medium text-gray-500">
-                                        Found {results.length} Relevant Cases:
-                                    </div>
-                                    {results.map((result, resultIndex) => (
-                                        <CaseCard
-                                            key={`${result.documentId}-${resultIndex}`}
-                                            title={result.analysis.title}
-                                            date={result.analysis.date}
-                                            tribunal={result.analysis.tribunal}
-                                            summary={result.analysis.summary}
-                                            documentId={result.documentId}
-                                            relevance={result.relevance}
-                                            decision={result.analysis.decision}
-                                            keyIssues={result.caseDetails?.background?.keyIssues}
-                                            keyPrinciples={result.analysis.keyPrinciples}
-                                        />
-                                    ))}
-                                </div>
-                            );
-                        } else {
-                            return (
-                                <div key={`no-results-${index}`} className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                                    <p className="text-gray-600 text-sm">No matching cases found.</p>
-                                </div>
-                            );
-                        }
-                    } catch (error) {
-                        console.error('Error processing search result:', error);
-                        return (
-                            <div key={`error-${index}`} className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                                <p className="text-red-600 text-sm">
-                                    Error displaying search results: {error instanceof Error ? error.message : 'Unknown error'}
-                                </p>
-                            </div>
-                        );
-                    }
-                }
                 return null;
             })}
+
+            {/* MDX Content */}
+            {mdxSource && (
+                <div className="prose prose-sm max-w-none prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-blockquote:border-l-emerald-600 prose-blockquote:text-emerald-800">
+                    <MDXRemote {...mdxSource} components={mdxComponents} />
+                </div>
+            )}
         </div>
     );
 }
@@ -175,47 +240,48 @@ function MessageContent({ content, toolInvocations }: { content: string | null; 
 export default function Chat() {
     const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
         maxSteps: 5,
-        onResponse: (response: any) => {
-            // Log the full response object with all nested details
-            console.log('Chat response:', {
-                ...response,
-                toolInvocations: response.toolInvocations?.map((tool: any) => ({
-                    state: tool.state,
-                    name: tool.name,
-                    args: tool.state === 'call' ? tool.args : undefined,
-                    output: tool.state === 'result' ? {
-                        results: tool.output?.results?.map((result: any) => ({
-                            documentId: result.documentId,
-                            similarity: result.similarity,
-                            relevance: result.relevance,
-                            analysis: result.analysis,
-                            caseDetails: result.caseDetails
-                        })),
-                        suggestedResponse: tool.output?.suggestedResponse
-                    } : undefined
-                }))
-            });
+        onResponse: (response) => {
+            if ('toolInvocations' in response) {
+                const responseWithTools = response as unknown as ResponseWithTools;
+                console.log('Chat response:', {
+                    ...response,
+                    toolInvocations: responseWithTools.toolInvocations?.map(tool => {
+                        if (tool.state === 'call') {
+                            return {
+                                state: tool.state,
+                                name: tool.name,
+                                args: tool.args
+                            };
+                        } else {
+                            return {
+                                state: tool.state,
+                                name: tool.name,
+                                output: {
+                                    results: tool.output.tool_results.results,
+                                    suggestedResponse: tool.output.tool_results.suggestedResponse
+                                }
+                            };
+                        }
+                    })
+                });
+            }
         },
-        onFinish: (message: any) => {
-            // Log the full message object with all nested details
-            console.log('Chat finished:', {
-                ...message,
-                toolInvocations: message.toolInvocations?.map((tool: any) => ({
-                    state: tool.state,
-                    name: tool.name,
-                    args: tool.state === 'call' ? tool.args : undefined,
-                    output: tool.state === 'result' ? {
-                        results: tool.output?.results?.map((result: any) => ({
-                            documentId: result.documentId,
-                            similarity: result.similarity,
-                            relevance: result.relevance,
-                            analysis: result.analysis,
-                            caseDetails: result.caseDetails
-                        })),
-                        suggestedResponse: tool.output?.suggestedResponse
-                    } : undefined
-                }))
-            });
+        onFinish: (message) => {
+            if ('toolInvocations' in message) {
+                const messageWithTools = message as unknown as ResponseWithTools;
+                console.log('Chat finished:', {
+                    ...message,
+                    toolInvocations: messageWithTools.toolInvocations?.map((tool: ToolInvocation) => ({
+                        state: tool.state,
+                        name: tool.name,
+                        args: tool.state === 'call' ? tool.args : undefined,
+                        output: tool.state === 'result' ? {
+                            results: (tool as ToolResultInvocation).output?.tool_results?.results,
+                            suggestedResponse: (tool as ToolResultInvocation).output?.tool_results?.suggestedResponse
+                        } : undefined
+                    }))
+                });
+            }
         },
     });
 

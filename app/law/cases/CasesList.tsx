@@ -2,9 +2,10 @@
 
 import { LegalDocumentSummary } from '@/backend/server-actions/law/types';
 import Link from 'next/link';
-import { IoScale, IoSearch } from 'react-icons/io5';
+import { IoScale, IoSearch, IoStatsChart, IoList, IoTime } from 'react-icons/io5';
 import { SearchParams } from './types';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
 interface CasesListProps {
     cases: LegalDocumentSummary[];
@@ -14,6 +15,7 @@ interface CasesListProps {
 export default function CasesList({ cases }: CasesListProps) {
     const router = useRouter();
     const params = useSearchParams();
+    const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
 
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -30,10 +32,33 @@ export default function CasesList({ cases }: CasesListProps) {
         router.push(`/law/cases?${searchParams.toString()}`);
     };
 
-    // Get unique categories from all cases
+    // Get statistics
     const categories = Array.from(new Set(
         cases.flatMap(c => c.analysis.categories || [])
     )).sort();
+
+    const keyTopics = Array.from(new Set(
+        cases.flatMap(c => c.analysis.keyTopics)
+    )).sort();
+
+    const categoryCount = categories.map(category => ({
+        name: category,
+        count: cases.filter(c => c.analysis.categories?.includes(category)).length
+    })).sort((a, b) => b.count - a.count);
+
+    const topicCount = keyTopics.map(topic => ({
+        name: topic,
+        count: cases.filter(c => c.analysis.keyTopics.includes(topic)).length
+    })).sort((a, b) => b.count - a.count);
+
+    const years = Array.from(new Set(
+        cases.map(c => parseInt(c.analysis.date.split(' ')[2] || '0'))
+    )).sort((a, b) => b - a);
+
+    const yearCount = years.map(year => ({
+        year,
+        count: cases.filter(c => c.analysis.date.includes(year.toString())).length
+    }));
 
     return (
         <div className="min-h-screen p-4 md:p-8">
@@ -47,6 +72,117 @@ export default function CasesList({ cases }: CasesListProps) {
                         Browse through New Zealand Human Rights Review Tribunal cases
                     </p>
                 </div>
+
+                {/* Statistics Section */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <button
+                        onClick={() => setIsStatsModalOpen(true)}
+                        className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50">
+                                <IoStatsChart className="h-6 w-6 text-blue-500" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Total Cases</p>
+                                <p className="text-2xl font-bold text-gray-900">{cases.length}</p>
+                            </div>
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => setIsStatsModalOpen(true)}
+                        className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-50">
+                                <IoList className="h-6 w-6 text-purple-500" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Categories</p>
+                                <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
+                            </div>
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => setIsStatsModalOpen(true)}
+                        className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50">
+                                <IoTime className="h-6 w-6 text-emerald-500" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Latest Year</p>
+                                <p className="text-2xl font-bold text-gray-900">
+                                    {Math.max(...years)}
+                                </p>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+
+                {/* Stats Modal */}
+                <dialog
+                    id="stats_modal"
+                    className={`modal ${isStatsModalOpen ? 'modal-open' : ''}`}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setIsStatsModalOpen(false);
+                    }}
+                >
+                    <div className="modal-box w-11/12 max-w-5xl">
+                        <h3 className="font-bold text-2xl mb-6 text-emerald-800">Detailed Statistics</h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Categories Section */}
+                            <div>
+                                <h4 className="font-semibold text-lg mb-4">Categories</h4>
+                                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                                    {categoryCount.map(({ name, count }) => (
+                                        <div key={name} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                            <span className="text-gray-700">{name.replace('_', ' ')}</span>
+                                            <span className="font-medium text-emerald-600">{count}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Key Topics Section */}
+                            <div>
+                                <h4 className="font-semibold text-lg mb-4">Key Topics</h4>
+                                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                                    {topicCount.map(({ name, count }) => (
+                                        <div key={name} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                            <span className="text-gray-700">{name}</span>
+                                            <span className="font-medium text-emerald-600">{count}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Timeline Section */}
+                            <div className="md:col-span-2">
+                                <h4 className="font-semibold text-lg mb-4">Cases by Year</h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                    {yearCount.map(({ year, count }) => (
+                                        <div key={year} className="p-3 bg-gray-50 rounded text-center">
+                                            <div className="text-lg font-medium text-emerald-600">{count}</div>
+                                            <div className="text-sm text-gray-600">{year}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="modal-action">
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => setIsStatsModalOpen(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </dialog>
 
                 {/* Search Form */}
                 <form onSubmit={handleSearch} className="mb-8">

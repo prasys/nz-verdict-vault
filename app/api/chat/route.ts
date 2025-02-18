@@ -2,6 +2,7 @@ import { openai } from '@ai-sdk/openai';
 import { streamText, tool } from 'ai';
 import { z } from 'zod';
 import { searchLegalDocuments } from '@/backend/server-actions/law/embedding/embedLegalSummaries';
+import { LEGAL_ASSISTANT_SYSTEM_MESSAGE } from '@/lib/ai/system-messages';
 
 export const maxDuration = 30;
 
@@ -10,9 +11,15 @@ export async function POST(req: Request) {
     const { messages } = await req.json();
     console.log('Incoming messages:', messages);
 
+    // Add system message to the start of the messages array
+    const messagesWithSystem = [
+      { role: 'system', content: LEGAL_ASSISTANT_SYSTEM_MESSAGE },
+      ...messages
+    ];
+
     const result = streamText({
       model: openai('gpt-4o-mini'),
-      messages,
+      messages: messagesWithSystem,
       tools: {
         legalSearch: tool({
           description: 'Search through legal documents using natural language queries and semantic embeddings. Use this to find relevant cases and then provide a natural language response incorporating the findings.',
