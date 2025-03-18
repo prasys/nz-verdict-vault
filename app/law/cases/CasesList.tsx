@@ -5,17 +5,23 @@ import Link from 'next/link';
 import { IoScale, IoSearch, IoStatsChart, IoList, IoTime } from 'react-icons/io5';
 import { SearchParams } from './types';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import CategoriesList from '@/components/ui/categories-list';
+import { CategoriesContext } from './CategoriesProvider';
 
 interface CasesListProps {
     cases: LegalDocumentSummary[];
+    totalCases: number;
     searchParams: SearchParams;
 }
 
-export default function CasesList({ cases }: CasesListProps) {
+export default function CasesList({ cases: initialCases, totalCases, searchParams }: CasesListProps) {
     const router = useRouter();
     const params = useSearchParams();
+    const [displayedCases, setDisplayedCases] = useState(initialCases);
+    const [isLoading, setIsLoading] = useState(false);
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+    const categories = useContext(CategoriesContext);
 
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -32,32 +38,42 @@ export default function CasesList({ cases }: CasesListProps) {
         router.push(`/law/cases?${searchParams.toString()}`);
     };
 
+    const loadMore = async () => {
+        setIsLoading(true);
+        try {
+            // Construct the URL with existing search params
+            const params = new URLSearchParams(searchParams as Record<string, string>);
+            params.set('skip', displayedCases.length.toString());
+            params.set('limit', '10');
+
+            const response = await fetch(`/api/cases?${params.toString()}`);
+            const newCases = await response.json();
+
+            setDisplayedCases(prev => [...prev, ...newCases]);
+        } catch (error) {
+            console.error('Error loading more cases:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     // Get statistics
-    const categories = Array.from(new Set(
-        cases.flatMap(c => c.analysis.categories || [])
-    )).sort();
-
     const keyTopics = Array.from(new Set(
-        cases.flatMap(c => c.analysis.keyTopics)
+        initialCases.flatMap(c => c.analysis.keyTopics)
     )).sort();
-
-    const categoryCount = categories.map(category => ({
-        name: category,
-        count: cases.filter(c => c.analysis.categories?.includes(category)).length
-    })).sort((a, b) => b.count - a.count);
 
     const topicCount = keyTopics.map(topic => ({
         name: topic,
-        count: cases.filter(c => c.analysis.keyTopics.includes(topic)).length
+        count: initialCases.filter(c => c.analysis.keyTopics.includes(topic)).length
     })).sort((a, b) => b.count - a.count);
 
     const years = Array.from(new Set(
-        cases.map(c => parseInt(c.analysis.date.split(' ')[2] || '0'))
+        initialCases.map(c => parseInt(c.analysis.date.split(' ')[2] || '0'))
     )).sort((a, b) => b - a);
 
     const yearCount = years.map(year => ({
         year,
-        count: cases.filter(c => c.analysis.date.includes(year.toString())).length
+        count: initialCases.filter(c => c.analysis.date.includes(year.toString())).length
     }));
 
     return (
@@ -85,7 +101,7 @@ export default function CasesList({ cases }: CasesListProps) {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-600">Total Cases</p>
-                                <p className="text-2xl font-bold text-gray-900">{cases.length}</p>
+                                <p className="text-2xl font-bold text-gray-900">{totalCases}</p>
                             </div>
                         </div>
                     </button>
@@ -136,14 +152,11 @@ export default function CasesList({ cases }: CasesListProps) {
                             {/* Categories Section */}
                             <div>
                                 <h4 className="font-semibold text-lg mb-4">Categories</h4>
-                                <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                                    {categoryCount.map(({ name, count }) => (
-                                        <div key={name} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                                            <span className="text-gray-700">{name.replace('_', ' ')}</span>
-                                            <span className="font-medium text-emerald-600">{count}</span>
-                                        </div>
-                                    ))}
-                                </div>
+                                <CategoriesList
+                                    categories={categories}
+                                    variant="main"
+                                    initialDisplayCount={10}
+                                />
                             </div>
 
                             {/* Key Topics Section */}
@@ -204,8 +217,8 @@ export default function CasesList({ cases }: CasesListProps) {
                         >
                             <option value="">All Categories</option>
                             {categories.map(category => (
-                                <option key={category} value={category}>
-                                    {category.replace('_', ' ')}
+                                <option key={category.name} value={category.name}>
+                                    {category.name.replace('_', ' ')}
                                 </option>
                             ))}
                         </select>
@@ -228,7 +241,7 @@ export default function CasesList({ cases }: CasesListProps) {
                 </form>
 
                 <div className="space-y-6">
-                    {cases.map((caseItem, index) => (
+                    {displayedCases.map((caseItem, index) => (
                         <div
                             key={`${caseItem.documentId}-${index}`}
                             className="relative overflow-hidden rounded-lg bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),_0_10px_10px_-5px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_30px_-12px_rgba(0,0,0,0.15)] transition-all duration-300"
@@ -304,6 +317,18 @@ export default function CasesList({ cases }: CasesListProps) {
                         </div>
                     ))}
                 </div>
+
+                {displayedCases.length < totalCases && (
+                    <div className="mt-8 flex justify-center">
+                        <button
+                            onClick={loadMore}
+                            disabled={isLoading}
+                            className="px-6 py-3 bg-emerald-600 text-white rounded-md font-medium shadow-sm hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? 'Loading...' : `Show More (${totalCases - displayedCases.length} remaining)`}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

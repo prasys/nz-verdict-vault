@@ -29,7 +29,7 @@ export function CaseCard({
     keyPrinciples,
 }: CaseCardProps) {
     return (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white my-10 rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             <div className="p-6 space-y-4">
                 {/* Header */}
                 <div className="space-y-2">
@@ -60,7 +60,7 @@ export function CaseCard({
                 {decision && (
                     <div className="space-y-2">
                         <h4 className="font-medium text-gray-900">Decision</h4>
-                        <p className="text-gray-700">{decision.outcome}</p>
+                        <p className="text-gray-700 text-sm bg-red-200 border font-bold border-red-300 inline-block text-red-700 rounded-full p-2">{decision.outcome}</p>
                     </div>
                 )}
 
