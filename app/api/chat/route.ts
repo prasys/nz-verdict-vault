@@ -7,6 +7,11 @@ import { AI_CONFIG } from '@/lib/config';
 
 export const maxDuration = 30;
 
+const openai = createOpenAI({
+  baseURL: AI_CONFIG.OPENAI_BASE_URL,
+  apiKey: AI_CONFIG.OPENAI_API_KEY
+});
+
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
