@@ -1,16 +1,13 @@
-// /backend/lib/ai/openai-call.ts
 'use server';
 
 import { generateText, Tool, LanguageModelV1 } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-
-if (!process.env.OPENAI_API_KEY) {
-    throw new Error('Missing OPENAI_API_KEY environment variable');
-}
+import { AI_CONFIG } from '@/lib/config';
 
 // Create OpenAI instance with API key
 const openaiInstance = createOpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    baseURL: AI_CONFIG.OPENAI_BASE_URL,
+    apiKey: AI_CONFIG.OPENAI_API_KEY
 });
 
 export interface OpenAiCallOptions {
@@ -23,7 +20,7 @@ export interface OpenAiCallOptions {
 
 // callVercelAi wraps the Vercel AI generateText call with standardized logging & error handling.
 export async function callOpenAi(options: OpenAiCallOptions) {
-    const model = openaiInstance(options.model ?? 'gpt-4o-mini') as LanguageModelV1;
+    const model = openaiInstance(options.model ?? AI_CONFIG.CHAT_MODEL) as LanguageModelV1;
     console.log('💡 Starting Vercel AI call with options:', options);
     try {
         const result = await generateText({
@@ -39,4 +36,4 @@ export async function callOpenAi(options: OpenAiCallOptions) {
         console.error('❌ Vercel AI call failed:', error);
         throw error;
     }
-} 
+}

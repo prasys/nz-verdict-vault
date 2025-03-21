@@ -3,20 +3,22 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { cosineSimilarity, embed, embedMany, generateText } from 'ai';
 import { scrapeLegalDocs } from '../scraping/scrapeLegalDocs';
+import { AI_CONFIG } from '@/lib/config';
 
 if (!process.env.OPENAI_API_KEY) {
     throw new Error('Missing OPENAI_API_KEY environment variable');
 }
 
 const openai = createOpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: AI_CONFIG.OPENAI_API_KEY,
+    baseURL: AI_CONFIG.OPENAI_BASE_URL
 });
 
 export async function analyzeLegalDocsWithEmbeddings(query: string) {
     try {
         // Pre-process the query to make it more detailed
         const { text: enhancedQuery } = await generateText({
-            model: openai('gpt-4o-mini'),
+            model: openai(AI_CONFIG.CHAT_MODEL),
             prompt: `You are a legal research assistant. Convert this user query into a more detailed and specific question that will help find relevant legal documents. Consider both direct and indirect relationships to the topic.
 
 Original query: "${query}"
@@ -93,7 +95,7 @@ Your response should be helpful even when exact matches aren't found.`,
 
         // Generate enhanced summary of document relevance
         const { text: summary } = await generateText({
-            model: openai('gpt-4o-mini'),
+            model: openai(AI_CONFIG.CHAT_MODEL),
             prompt: `You are a legal research assistant. Analyze these search results and provide a detailed summary of their relevance to the query.
                      
 Query: "${query}"

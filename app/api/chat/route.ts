@@ -3,6 +3,7 @@ import { streamText, tool } from 'ai';
 import { z } from 'zod';
 import { searchLegalDocuments } from '@/backend/server-actions/law/embedding/embedLegalSummaries';
 import { LEGAL_ASSISTANT_SYSTEM_MESSAGE } from '@/lib/ai/system-messages';
+import { AI_CONFIG } from '@/lib/config';
 
 export const maxDuration = 30;
 
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
     ];
 
     const result = streamText({
-      model: openai('gpt-4o-mini'),
+      model: openai(AI_CONFIG.CHAT_MODEL),
       messages: messagesWithSystem,
       tools: {
         legalSearch: tool({
