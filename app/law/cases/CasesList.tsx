@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { IoScale, IoSearch, IoStatsChart, IoList, IoTime } from 'react-icons/io5';
 import { SearchParams } from './types';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useContext } from 'react';
+import { useState, useContext,Suspense } from 'react';
 import CategoriesList from '@/components/ui/categories-list';
 import { CategoriesContext } from './CategoriesProvider';
 

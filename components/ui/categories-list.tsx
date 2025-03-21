@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState,Suspense  } from 'react';
 
 interface Category {
     name: string;

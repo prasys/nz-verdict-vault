@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState,Suspense  } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import {
