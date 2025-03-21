@@ -15,7 +15,7 @@ interface CasesListProps {
     searchParams: SearchParams;
 }
 
-function CasesList({ cases: initialCases, totalCases, searchParams }: CasesListProps) {
+function CasesListContent({ cases: initialCases, totalCases, searchParams }: CasesListProps) {
     const router = useRouter();
     const params = useSearchParams();
     const [displayedCases, setDisplayedCases] = useState(initialCases);
@@ -332,6 +332,7 @@ function CasesList({ cases: initialCases, totalCases, searchParams }: CasesListP
             </div>
         </div>
     );
+}
 
 // This is the main component that wraps CasesListContent in Suspense
 export default function CasesList(props: CasesListProps) {

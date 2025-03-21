@@ -96,7 +96,7 @@ function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
 }
 
-function Sidebar({ children, categories = [] }: SidebarProps) {
+function SidebarContent({ children, categories = [] }: SidebarProps) {
     const [open, setOpen] = useState(false)
     const pathname = usePathname()
     const router = useRouter()
@@ -450,7 +450,7 @@ export default function Sidebar(props: SidebarProps) {
                 </div>
             </div>
         }>
-            <CasesListContent {...props} />
+            <SidebarContent {...props} />
         </Suspense>
     );
 }

@@ -15,7 +15,7 @@ interface CategoriesListProps {
     initialDisplayCount?: number;
 }
 
-function CategoriesList({
+function CategoriesListContent({
     categories,
     variant = 'sidebar',
     showCount = true,
@@ -108,7 +108,7 @@ export default function CategoriesList(props: CategoriesListProps) {
                 </div>
             </div>
         }>
-            <CasesListContent {...props} />
+            <CategoriesListContent {...props} />
         </Suspense>
     );
 }
