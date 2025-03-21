@@ -6,12 +6,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import { LegalDocumentSummary } from '../types';
 
-if (!process.env.OPENAI_API_KEY) {
+if (!process.env.OPENAI_API_KEY2) {
     throw new Error('Missing OPENAI_API_KEY environment variable');
 }
 
 const openai = createOpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: process.env.OPENAI_API_KEY2 # seperate for OpenAI
 });
 
 interface EmbeddedDocument extends LegalDocumentSummary {
