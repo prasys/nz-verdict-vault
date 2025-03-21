@@ -8,10 +8,8 @@ import { CaseDetailView } from './CaseDetailView';
 
 export default async function CaseDetailPage({
     params,
-    searchParams,
 }: {
     params: { id: string };
-    searchParams?: Record<string, string | string[] | undefined>;
 }) {
     const caseData = await getCaseById(params.id);
 
