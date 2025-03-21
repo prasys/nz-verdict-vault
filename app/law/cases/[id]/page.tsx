@@ -4,13 +4,13 @@ import { getCaseById } from '@/backend/server-actions/law/cases/getCaseById';
 import { notFound } from 'next/navigation';
 import { CaseDetailView } from './CaseDetailView';
 
-// Remove the custom PageProps type entirely
+interface PageProps {
+    params: { id: string };
+}
 
 export default async function CaseDetailPage({
     params,
-}: {
-    params: { id: string };
-}) {
+}: PageProps) {
     const caseData = await getCaseById(params.id);
 
     if (!caseData) {
