@@ -11,7 +11,7 @@ if (!process.env.OPENAI_API_KEY2) {
 }
 
 const openai = createOpenAI({
-    apiKey: process.env.OPENAI_API_KEY2 # seperate for OpenAI
+    apiKey: process.env.OPENAI_API_KEY2
 });
 
 interface EmbeddedDocument extends LegalDocumentSummary {
