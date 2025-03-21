@@ -1,4 +1,4 @@
-// Remove any 'use server' directive that might be at the top
+'use server';
 
 import { getCaseById } from '@/backend/server-actions/law/cases/getCaseById';
 import { notFound } from 'next/navigation';
@@ -10,10 +10,8 @@ interface PageProps {
 
 export default async function CaseDetailPage({
     params,
-}: {
-    params: { id: string };
-}) {
-    const caseData = await getCaseById((params as any).id);
+}: PageProps) {
+    const caseData = await getCaseById(params.id);
 
     if (!caseData) {
         notFound();
@@ -21,3 +19,11 @@ export default async function CaseDetailPage({
 
     return <CaseDetailView caseData={caseData} />;
 }
+
+// Add type safety for params
+export async function generateStaticParams() {
+    return [
+        { id: '1' },
+        { id: '2' },
+    ];
+} 
