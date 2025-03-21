@@ -15,7 +15,7 @@ interface CasesListProps {
     searchParams: SearchParams;
 }
 
-export default function CasesList({ cases: initialCases, totalCases, searchParams }: CasesListProps) {
+function CasesList({ cases: initialCases, totalCases, searchParams }: CasesListProps) {
     const router = useRouter();
     const params = useSearchParams();
     const [displayedCases, setDisplayedCases] = useState(initialCases);
@@ -332,4 +332,21 @@ export default function CasesList({ cases: initialCases, totalCases, searchParam
             </div>
         </div>
     );
-} 
+
+// This is the main component that wraps CasesListContent in Suspense
+export default function CasesList(props: CasesListProps) {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen p-4 md:p-8 flex justify-center items-center">
+                <div className="animate-pulse text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 mb-6">
+                        <IoScale className="w-8 h-8 text-emerald-500 opacity-50" />
+                    </div>
+                    <h1 className="text-4xl font-bold mb-3 text-emerald-800 opacity-50">Loading cases...</h1>
+                </div>
+            </div>
+        }>
+            <CasesListContent {...props} />
+        </Suspense>
+    );
+}

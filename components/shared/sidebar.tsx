@@ -96,7 +96,7 @@ function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Sidebar({ children, categories = [] }: SidebarProps) {
+function Sidebar({ children, categories = [] }: SidebarProps) {
     const [open, setOpen] = useState(false)
     const pathname = usePathname()
     const router = useRouter()
@@ -436,4 +436,21 @@ export default function Sidebar({ children, categories = [] }: SidebarProps) {
             </div>
         </div>
     )
+}
+
+export default function Sidebar(props: SidebarProps) {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen p-4 md:p-8 flex justify-center items-center">
+                <div className="animate-pulse text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 mb-6">
+                        <IoScale className="w-8 h-8 text-emerald-500 opacity-50" />
+                    </div>
+                    <h1 className="text-4xl font-bold mb-3 text-emerald-800 opacity-50">Loading cases...</h1>
+                </div>
+            </div>
+        }>
+            <CasesListContent {...props} />
+        </Suspense>
+    );
 }
