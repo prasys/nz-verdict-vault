@@ -49,7 +49,7 @@ export default function LawPage() {
                         <div className="absolute -top-2 -left-2 w-20 h-20 bg-blue-600 rounded-full opacity-20 animate-pulse" />
                     </div>
                     <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                        Welcome to NZ Verdict Vault
+                        Welcome to LawQ
                     </h1>
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                         Your AI-powered platform for legal research and analysis
