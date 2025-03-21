@@ -1,13 +1,14 @@
-'use server';
+// Remove 'use server' from the top of the file
 
 import { getCaseById } from '@/backend/server-actions/law/cases/getCaseById';
 import { notFound } from 'next/navigation';
 import { CaseDetailView } from './CaseDetailView';
 
-interface PageProps {
-    params: { id: string; }
-    searchParams?: Record<string, string | string[]>;
-  }
+// Change from interface to type and include searchParams
+type PageProps = {
+    params: { id: string };
+    searchParams?: Record<string, string | string[] | undefined>;
+}
 
 export default async function CaseDetailPage({
     params,
@@ -21,10 +22,4 @@ export default async function CaseDetailPage({
     return <CaseDetailView caseData={caseData} />;
 }
 
-// Add type safety for params
-export async function generateStaticParams() {
-    return [
-        { id: '1' },
-        { id: '2' },
-    ];
-} 
+// Rest of your code remains the same
