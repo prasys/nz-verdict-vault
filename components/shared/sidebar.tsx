@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import CategoriesList from '../ui/categories-list'
+import { IoScale } from 'react-icons/io5'; // Add this import
 
 interface SidebarProps {
     children: React.ReactNode;

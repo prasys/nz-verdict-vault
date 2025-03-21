@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useState,Suspense  } from 'react';
+import { IoScale } from 'react-icons/io5'; // Add this import
 
 interface Category {
     name: string;
