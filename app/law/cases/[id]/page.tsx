@@ -5,8 +5,9 @@ import { notFound } from 'next/navigation';
 import { CaseDetailView } from './CaseDetailView';
 
 interface PageProps {
-    params: { id: string };
-}
+    params: { id: string; }
+    searchParams?: Record<string, string | string[]>;
+  }
 
 export default async function CaseDetailPage({
     params,

@@ -2,8 +2,7 @@ import CasesList from './CasesList';
 import { SearchParams } from './types';
 import { getCases } from './actions';
 
-export default async function CasePage({ params }: PageProps) {
-    searchParams,
+export default async function CasePage({    searchParams,
 }: {
     searchParams: SearchParams;
 }) {

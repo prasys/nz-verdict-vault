@@ -92,6 +92,23 @@ yarn dev
 
 4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
+## Deployment
+
+### Dependencies Installation
+
+When deploying to production or running in CI pipelines, you might encounter lockfile synchronization issues. If you see the following error:
+
+```
+Use the following command to update the lockfile:
+
+```bash
+pnpm install --no-frozen-lockfile
+```
+
+After updating the lockfile, commit the changes to your repository to prevent this issue in future deployments.
+
+For local development, it's recommended to run standard `pnpm install` to ensure consistent dependencies.
+
 ## 💡 Usage
 
 ### Generating Case Summaries
