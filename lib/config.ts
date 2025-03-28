@@ -11,6 +11,7 @@ export const AI_CONFIG = {
   // OpenAI API configuration
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL || 'https://openrouter.ai/api/v1',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  OPENAI_API_KEY2: process.env.OPENAI_API_KEY2,
 };
 
 // Validate required environment variables
