@@ -20,12 +20,10 @@ const nextConfig = {
     }
     return config;
   },
-  experimental: {
-    serverComponentsExternalPackages: ['tesseract.js'],
-    outputFileTracingIncludes: {
-      '/api/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
-      '/law/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
-    },
+  serverExternalPackages: ['tesseract.js'], // Moved and renamed from experimental.serverComponentsExternalPackages
+  outputFileTracingIncludes: {              // Moved from experimental.outputFileTracingIncludes
+    '/api/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
+    '/law/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
   },
 };
 
