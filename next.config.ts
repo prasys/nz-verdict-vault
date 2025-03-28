@@ -20,6 +20,12 @@ const nextConfig = {
     }
     return config;
   },
+  experimental: {
+    serverComponentsExternalPackages: ['tesseract.js'],
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
+    },
+  },
 };
 
 const withMDX = createMDX({});
