@@ -6,10 +6,19 @@ import { AIToolError, ErrorCode } from '@/lib/error/errorHandler';
 
 export async function uploadAndAnalyzePDF(file: File) {
   try {
+    console.log('Starting PDF analysis for file:', file.name);
     const text = await parsePDF(file);
+    console.log('PDF parsed successfully, text length:', text.length);
+
     const narrative = await analyzeNarrative(text);
+    console.log('Narrative analyzed:', narrative);
+
     const framework = await identifyFramework(text);
+    console.log('Framework identified:', framework);
+
     const { reasoning, recommendation } = await generateReasoning(narrative, framework);
+    console.log('Reasoning and recommendation generated:', { reasoning, recommendation });
+
     return {
       narrative,
       framework,
@@ -17,6 +26,7 @@ export async function uploadAndAnalyzePDF(file: File) {
       recommendation,
     };
   } catch (error) {
+    console.error('Error in uploadAndAnalyzePDF:', error);
     if (error instanceof AIToolError) {
       throw error;
     }
