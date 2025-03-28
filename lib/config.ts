@@ -3,7 +3,7 @@
 // AI model configuration
 export const AI_CONFIG = {
   // Default chat model with fallback
-  CHAT_MODEL: process.env.NEXT_PUBLIC_AI_CHAT_MODEL || 'openai/gpt-4o-mini',
+  CHAT_MODEL: process.env.NEXT_PUBLIC_AI_CHAT_MODEL || 'gpt-4o-2024-08-06',
   
   // Model for embeddings
   EMBEDDING_MODEL: process.env.NEXT_PUBLIC_AI_EMBEDDING_MODEL || 'text-embedding-3-small',

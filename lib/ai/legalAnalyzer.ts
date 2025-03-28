@@ -3,8 +3,9 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { AI_CONFIG } from '@/lib/config';
 
 const openai = createOpenAI({
-  baseURL: AI_CONFIG.OPENAI_BASE_URL,
-  apiKey: AI_CONFIG.OPENAI_API_KEY,
+//   baseURL: AI_CONFIG.OPENAI_BASE_URL,
+apiKey: process.env.OPENAI_API_KEY2 
+//   apiKey: AI_CONFIG.OPENAI_API_KEY,
 });
 
 export async function analyzeNarrative(text: string): Promise<string> {
