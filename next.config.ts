@@ -24,6 +24,7 @@ const nextConfig = {
     serverComponentsExternalPackages: ['tesseract.js'],
     outputFileTracingIncludes: {
       '/api/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
+      '/law/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
     },
   },
 };
