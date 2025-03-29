@@ -15,15 +15,10 @@ export async function parsePDF(file: File): Promise<string> {
       return pdfText;
     }
 
-  //   console.log('No text found, attempting OCR...');
-  //   const { data: ocrData } = await Tesseract.recognize(buffer, 'eng');
-  //   console.log('OCR result:', { textLength: ocrData.text.length });
-  //   if (!ocrData.text) throw new Error('No text extracted after OCR');
-  //   return ocrData.text;
-  // } catch (error) {
-  //   console.error('PDF parsing error:', error);
-  //   throw new Error('Failed to parse PDF: ' + (error instanceof Error ? error.message : 'Unknown error'));
-  // }
+  } catch (error) {
+    console.error('PDF parsing error:', error);
+    throw new Error('Failed to parse PDF: ' + (error instanceof Error ? error.message : 'Unknown error'));
+  }
 }
 
 async function extractTextWithPdf2json(buffer: ArrayBuffer): Promise<string> {
