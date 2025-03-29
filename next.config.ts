@@ -20,11 +20,11 @@ const nextConfig = {
     }
     return config;
   },
-  serverExternalPackages: ['tesseract.js'], // Moved and renamed from experimental.serverComponentsExternalPackages
-  outputFileTracingIncludes: {              // Moved from experimental.outputFileTracingIncludes
-    // '/api/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
-    '/law/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
-  },
+  serverExternalPackages: ['pdf2json.js'], // Moved and renamed from experimental.serverComponentsExternalPackages
+  // outputFileTracingIncludes: {              // Moved from experimental.outputFileTracingIncludes
+  //   // '/api/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
+  //   '/law/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto'],
+  // },
 };
 
 const withMDX = createMDX({});
