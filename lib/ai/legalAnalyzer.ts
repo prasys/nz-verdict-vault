@@ -6,7 +6,7 @@ import { AIToolError, ErrorCode } from '@/lib/error/errorHandler';
 // Create a function to get the OpenAI client to ensure it's properly initialized
 function getOpenAIClient() {
   try {
-    const apiKey = process.env.OPENAI_API_KEY2 || '';
+    const apiKey = process.env.OPENAI_API_KEY || '';
     if (!apiKey) {
       throw new Error('OpenAI API key is missing or empty');
     }
