@@ -43,7 +43,7 @@ export default function ReasoningPage() {
             disabled={isLoading || !file}
             className="btn w-full mb-8 btn-primary disabled:opacity-50"
           >
-            {isLoading ? 'Analyzing...' : 'Analyze PDF'}
+            {isLoading ? 'Analysing...' : 'Analyse PDF'}
           </button>
         </form>
         {error && (
