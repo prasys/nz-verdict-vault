@@ -2,6 +2,8 @@
 'use server';
 import { OpenAI } from 'openai';  // Use the direct OpenAI library instead
 import { AIToolError, ErrorCode } from '@/lib/error/errorHandler';
+import { ANALYSER_SYSTEM_MESSAGE } from '@/lib/ai/system-messages';
+
 
 // Create a function to get the OpenAI client to ensure it's properly initialized
 function getOpenAIClient() {
@@ -37,7 +39,7 @@ export async function analyzeNarrative(text: string): Promise<string> {
       messages: [
         {
           role: 'system',
-          content: 'Extract the legal narrative (key facts, events, and parties) from the following text in a concise paragraph.',
+          content: ANALYSER_SYSTEM_MESSAGE,
         },
         { role: 'user', content: text.substring(0, 15000) }, // Limit text length
       ],
@@ -65,7 +67,7 @@ export async function identifyFramework(text: string): Promise<string> {
       messages: [
         {
           role: 'system',
-          content: 'Identify the legal framework (laws, regulations, or principles) applied or referenced in the following text. List them clearly.',
+          content: 'ANALYSER_SYSTEM_MESSAGE',
         },
         { role: 'user', content: text.substring(0, 15000) }, // Limit text length
       ],
@@ -96,7 +98,7 @@ export async function generateReasoning(
       messages: [
         {
           role: 'system',
-          content: `Apply the legal narrative to the framework. Provide detailed reasoning and a recommendation. Format your response with "Reasoning:" followed by the reasoning, and "Recommendation:" followed by the recommendation.`,
+          content: ANALYSER_SYSTEM_MESSAGE,
         },
         { role: 'user', content: `Narrative: ${narrative}\nFramework: ${framework}` },
       ],
