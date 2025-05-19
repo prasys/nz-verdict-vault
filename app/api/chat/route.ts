@@ -2,7 +2,9 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, tool } from 'ai';
 import { z } from 'zod';
 import { searchLegalDocuments } from '@/backend/server-actions/law/embedding/embedLegalSummaries';
-import { LEGAL_ASSISTANT_SYSTEM_MESSAGE } from '@/lib/ai/system-messages';
+// import { LEGAL_ASSISTANT_SYSTEM_MESSAGE } from '@/lib/ai/system-messages';
+import { ANALYSER_SYSTEM_MESSAGE } from '@/lib/ai/system-messages';
+
 import { AI_CONFIG } from '@/lib/config';
 
 export const maxDuration = 30;
@@ -19,7 +21,7 @@ export async function POST(req: Request) {
 
     // Add system message to the start of the messages array
     const messagesWithSystem = [
-      { role: 'system', content: LEGAL_ASSISTANT_SYSTEM_MESSAGE },
+      { role: 'system', content: ANALYSER_SYSTEM_MESSAGE },
       ...messages
     ];
 
